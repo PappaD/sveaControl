@@ -1,5 +1,4 @@
 # sveaControl
-Relay control system with LCD screen
 
 Simple arduino sketch that uses LCD and simple button menu to control relays.
 
