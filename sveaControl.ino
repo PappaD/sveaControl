@@ -6,6 +6,13 @@
 #include "menuItemManager.h"
 #include "PCF8574.h"
 
+#define BACKLIGHTSAVE 60
+#define SCREENSAVE 600
+
+
+// #define PROTOTYPE
+
+#ifdef PROTOTYPE
 
 #define LCD_RS 8
 #define LCD_EN 9
@@ -16,28 +23,50 @@
 #define LCD_BL 10
 #define KEY_PIN A0 // A0
 
-#define BACKLIGHTSAVE 60
-#define SCREENSAVE 600
 
+// Ignore below, only there to compile
 #define ACC0 0 // Dont use, serial
 #define ACC1 1 // Dont use, serial
-#define GPS_RX 2
-#define ACC3 3
-#define ACC4 11
-#define ACC5 12
-#define ACC6 13
-#define ACC7 18
-#define ACC8 19
+#define BUTTONVCC 2
+#define BUTTONVSS 3
+#define LCD_LEDVSS 11
+#define POTVCC 12
+#define LCD_VCC 13
+#define LCD_VSS 18
+#define LCD_RW 19
+#define POTVSS A1
 
+#else
 
+#define LCD_RS 4
+#define LCD_EN 6
+#define LCD_D4 7
+#define LCD_D5 8
+#define LCD_D6 9
+#define LCD_D7 10
+
+#define LCD_RW 5
+#define LCD_VSS 2
+#define LCD_VCC 3
+#define POTVSS A2
+#define POTVCC A3
+
+#define LCD_BL 11
+#define LCD_LEDVSS 12
+
+#define BUTTONVSS A1
+#define BUTTONVCC A0
+#define KEY_PIN A7
+
+#endif
 
 #define NUM_KEYS 3
 int adcKeyVal[3] ={598,408,137};
 int key=-1;
 int oldkey=-1;
 #define DOWN 0
-#define UP 1
-#define SELECT 2
+#define UP 2
+#define SELECT 1
 
 long lastKeyPress=0;
 
@@ -87,6 +116,33 @@ int state=0;
 
 
 void setup() {
+  Serial.begin(9600);
+  
+  pinMode(LCD_RW, OUTPUT);
+  pinMode(LCD_VSS, OUTPUT);
+  pinMode(LCD_VCC, OUTPUT);
+  pinMode(POTVSS, OUTPUT);
+  pinMode(POTVCC, OUTPUT);
+  pinMode(LCD_BL, OUTPUT);
+  pinMode(LCD_LEDVSS, OUTPUT);
+  pinMode(BUTTONVSS, OUTPUT);
+  pinMode(BUTTONVCC, OUTPUT);
+
+  digitalWrite(LCD_RW, 0);
+  digitalWrite(LCD_VSS, 0);
+  digitalWrite(LCD_VCC, 1);
+  digitalWrite(POTVSS, 0);
+  digitalWrite(POTVCC, 1);
+
+  digitalWrite(LCD_BL, 0);
+  digitalWrite(LCD_LEDVSS, 0);
+
+  digitalWrite(BUTTONVSS, 0);
+  digitalWrite(BUTTONVCC, 1);
+
+  lcd.begin(16, 2);
+
+  
   lcd.begin(16, 2);
   pinMode(LCD_BL, OUTPUT);
 
@@ -146,8 +202,11 @@ void loop() {
   }
 
   if(millis() - lastKeyPress > 1000L*BACKLIGHTSAVE) {
+    Serial.println("Turning off backlight");
     analogWrite(LCD_BL, 0);
   } else {
+    Serial.print("Backlight set to ");
+    Serial.println(backlight.getInteger()*255/100);
     analogWrite(LCD_BL, backlight.getInteger()*255/100);
   }
 
